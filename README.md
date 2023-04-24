@@ -1,4 +1,5 @@
 ### Theory Of Computing
+#Subset method : https://www.javatpoint.com/automata-conversion-of-re-to-fa
 
 <!--
 **MennaSebak/MennaSebak** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
