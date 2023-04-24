@@ -1,4 +1,4 @@
-### Hi there 👋
+### Theory Of Computing
 
 <!--
 **MennaSebak/MennaSebak** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
