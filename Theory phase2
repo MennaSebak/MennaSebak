@@ -1,0 +1,253 @@
+##############################################################
+# Theory of Computing
+##############################################################
+# Anas Ahmed Hassan Sayed - 202000005
+# Mennatallah Mohamed Naguib - 202001758
+# Ziad Mohamed – 202000055
+# Seif Khattab – 202000478
+
+
+##############################################################
+# CFG to CNF
+##############################################################
+
+def cfg_2_cnf(cfg):
+    cnf = cfg.copy()
+
+    # 1st Create New Start State
+    cnf['S0'] = ['S']
+    start_symbol = 'S0'
+
+    # 2nd Eliminate nullable productions
+    cnf = eliminate_nullable_productions(cnf)
+
+    # 3rd Eliminate unit productions
+    cnf = eliminate_unit_productions(cnf)
+
+    # 4th Eliminate useless productions
+    cnf, useful_symbols = eliminate_useless_productions(cnf, start_symbol)
+
+    # 5th Convert to Chomsky Normal Form
+    cnf = convert_to_cnf(cnf, useful_symbols, start_symbol)
+
+    return cnf
+
+##############################################################
+# Helper Functions
+##############################################################
+
+def eliminate_nullable_productions(cfg):
+    # Step 2: Eliminate nullable productions
+    nullable = set()
+
+    # Find nullable symbols
+    for symbol, productions in cfg.items():
+        if '' in productions:
+            nullable.add(symbol)
+
+    # Eliminate nullable productions# Step 2: Eliminate nullable productions
+    new_productions = {}
+
+    for symbol, productions in cfg.items():
+        new_productions[symbol] = []
+        for production in productions:
+            if all(s in nullable for s in production):
+                # Skip this production if all symbols in it are nullable
+                continue
+
+            # Generate all possible combinations of symbols in the production
+            # with nullable symbols removed
+            new_production = []
+            for s in production:
+                if s not in nullable:
+                    new_production.append(s)
+
+            if len(new_production) == 0:
+                # If the new production is empty, replace it with epsilon
+                new_production.append('')
+
+            new_productions[symbol].append(new_production)
+
+    # Flatten the list of productions
+    for symbol, productions in new_productions.items():
+        new_productions[symbol] = [p for prod in productions for p in prod]
+
+    return new_productions
+
+
+def eliminate_unit_productions(cfg):
+    # Step 3: Eliminate unit productions
+    new_productions = {}
+
+    for symbol, productions in cfg.items():
+        new_productions[symbol] = []
+        for production in productions:
+            if len(production) == 1 and production[0].isupper():
+                # If the production is a unit production, replace it with
+                # all the productions of the non-terminal it produces
+                non_terminal = production[0]
+                new_productions[symbol].extend(cfg[non_terminal])
+            else:
+                new_productions[symbol].append(production)
+
+    return new_productions
+
+
+def eliminate_useless_productions(cfg, start_symbol):
+    # Step 4: Eliminate useless productions
+    useful_symbols = set()
+    useful_symbols.add(start_symbol)
+
+    # Find all symbols that can be derived from the start symbol
+    new_symbols_added = True
+    while new_symbols_added:
+        new_symbols_added = False
+        for symbol, productions in cfg.items():
+            if symbol not in useful_symbols:
+                continue
+            for production in productions:
+                for s in production:
+                    if s.isupper() and s not in useful_symbols:
+                        useful_symbols.add(s)
+                        new_symbols_added = True
+
+    # Remove symbols that cannot be derived from the start symbol
+    new_productions = {}
+    for symbol, productions in cfg.items():
+        if symbol not in useful_symbols:
+            continue
+        new_productions[symbol] = []
+        for production in productions:
+            if all(s in useful_symbols or not s.isupper() for s in production):
+                new_productions[symbol].append(production)
+
+    return new_productions, useful_symbols
+
+
+def convert_to_cnf(cfg, useful_symbols, start_symbol):
+    # Step 5: Convert to Chomsky Normal Form
+    new_productions = {}
+
+    # Convertproductions with more than two symbols into binary productions
+    for symbol, productions in cfg.items():
+        new_productions[symbol] = []
+        for production in productions:
+            if len(production) > 2:
+                # Replace the production with a sequence of binary productions
+                new_symbol = get_new_symbol(cfg)
+                useful_symbols.add(new_symbol)
+                new_productions[new_symbol] = [production[:-1], [production[-1]]]
+                production = [production[0], new_symbol]
+
+            new_productions[symbol].append(production)
+
+    # Replace terminals with new symbols
+    for symbol, productions in new_productions.items():
+        for i, production in enumerate(productions):
+            new_production = []
+            for s in production:
+                if not s.isupper():
+                    # Replace the terminal with a new symbol
+                    if s not in cfg:
+                        cfg[s] = [s]
+                    new_symbol = get_new_symbol(cfg)
+                    useful_symbols.add(new_symbol)
+                    new_productions[new_symbol] = [[s]]
+                    new_production.append(new_symbol)
+                else:
+                    new_production.append(s)
+            new_productions[symbol][i] = new_production
+
+    # Make sure the start symbol only has one production
+    if start_symbol in new_productions and len(new_productions[start_symbol]) > 1:
+        new_start_symbol = get_new_symbol(cfg)
+        new_productions[new_start_symbol] = [[start_symbol]]
+        start_symbol = new_start_symbol
+
+    return new_productions
+
+
+def get_new_symbol(cfg):
+    # Generate a new symbol that is not already in the CFG
+    i = 0
+    while True:
+        symbol = 'X' + str(i)
+        if symbol not in cfg:
+            return symbol
+        i += 1
+
+
+##############################################################
+# Printing CFG
+##############################################################
+
+def print_cfg(cfg):
+    for symbol, productions in cfg.items():
+        print(symbol, "->", " | ".join("".join(p) for p in productions))
+
+##############################################################
+# Testing
+##############################################################
+
+CFG_test = {'S': ['ASB', 'a'],
+            'A': ['aAS', 'a', ''],
+            'B': ['SbS', 'A', 'bb']}
+
+print("---------------------------------------")
+print("Starting CFG:")
+print("---------------------------------------")
+print_cfg(CFG_test)
+
+cnf_test = cfg_2_cnf(CFG_test)
+
+print("---------------------------------------")
+print("CNF:")
+print("---------------------------------------")
+print_cfg(cnf_test)
+
+##############################################################
+# User Input
+##############################################################
+
+# Instructions
+print("---------------------------------------")
+print("Enter the CFG in the following format:")
+print("---------------------------------------")
+print("S->ASB|a")
+print("A->aAS|a|e")
+print("B->SbS|A|bb")
+print("---------------------------------------")
+print("Enter 'q' to stop entering the CFG")
+print("---------------------------------------")
+print("Enter the CFG: ")
+
+#User Input
+CFG_input = {}
+user_input = ""
+
+#Getting the CFG from the user
+while True:
+  
+  user_input = input()
+
+  if user_input != 'q':
+   
+   user_input = user_input.split('->')
+
+   CFG_input[user_input[0]] = user_input[1].split('|')
+  else:
+   break
+
+
+#Printing the CFG
+print("The CFG you entered is:")
+print_cfg(CFG_input)
+
+
+#Convert the CFG to CNF and print the result
+cnf_input = cfg_2_cnf(CFG_input)
+
+print("---------------------------------------")
+print("CNF:")
+print("---------------------------------------")
+print_cfg(cnf_input)
