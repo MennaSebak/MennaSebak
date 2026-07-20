@@ -23,11 +23,21 @@ Sample ABAP development work demonstrating practical skills used in real SAP pro
 - Displays results in classical ALV Grid
 
 ### 2) Purchase Order Details RFC
-**File:** `rfcs/z_po_details_sample.abap`
+**File:** `rfcs/z_po_details_sample.abap`  
+**Structure notes:** `docs/z_po_details_structure.md`
 
 - Remote-enabled function module
 - Input: Purchase Order number
 - Output: item-level table (vendor, material, qty, received qty, storage location, MPN)
+- Reads from `EKKO`, `EKPO`, `LFA1`, `MAKT`, `MARA`, `EKET`
+
+### 3) Open PO Documents Mapping Sample
+**File:** `rfcs/z_po_open_docs_sample.abap`
+
+- Pattern for enriching purchasing document rows
+- Calculates received qty/value
+- Maps invoice qty/value into still-to-be-delivered fields
+- Derives first/last ETA from schedule lines
 
 ## How to Use in SAP
 

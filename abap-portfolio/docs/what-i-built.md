@@ -8,8 +8,10 @@
 ## RFC Development
 - Remote-enabled function modules
 - Import/export table interfaces
+- PO Details RFC (header/item reads and output mapping)
 - Multi-table reads (`EKKO`, `EKPO`, `LFA1`, `MAKT`, `MARA`, `EKET`)
 - Mapping result rows into a custom output structure
+- Purchasing-document enrichment pattern (received qty/value, ETA, invoice mapping)
 
 ## Delivery Practices
 - Dictionary objects (structures / table types)
